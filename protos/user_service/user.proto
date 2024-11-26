@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "protos/user_service";
+
+import "google/protobuf/descriptor.proto";
+
+package protos.user_service;
+
+service UserService {
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+    rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {}
+}
+
+message GetUserRequest {
+    string user_id = 1;
+    string tenant_id = 2;
+}
+
+message GetUsersRequest {
+    repeated string user_ids = 1;
+    string tenant_id = 2;
+}
+
+extend google.protobuf.EnumValueOptions {
+    string label = 1000;
+}
+
+enum UserTypes {
+    USER_TYPE_UNSPECIFIED = 0 [(label) = "Not Specified"];
+    USER_TYPE_ACTIVE = 1 [(label) = "Active"];
+    USER_TYPE_INACTIVE = 2 [(label) = "Inactive"];
+}
+
+message UserInfo {
+    int64 user_id = 1;
+    string tenant_id = 2;
+    string full_name = 3;
+    string email = 4;
+    UserTypes user_type = 5;
+}
+
+message GetUserResponse {
+    bool success = 1;
+    UserInfo data = 2;
+}
+
+message GetUsersResponse {
+    bool success = 1;
+    repeated UserInfo data = 2;
+}

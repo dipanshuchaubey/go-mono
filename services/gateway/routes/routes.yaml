@@ -1,0 +1,23 @@
+GetUsers:
+  url: /users
+  method: GET
+  handler: GetUsers
+  timeout: 2000
+  auth: true
+  rateLimit: 10
+
+GetUser:
+  url: /users/{id}
+  method: GET
+  handler: GetUser
+  timeout: 2000
+  auth: true
+  rateLimit: 10
+
+GetBootcamps:
+  url: /bootcamps
+  method: GET
+  handler: GetBootcamps
+  timeout: 2000
+  auth: true
+  rateLimit: 10

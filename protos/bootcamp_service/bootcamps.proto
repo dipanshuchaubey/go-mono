@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package = "protos/bootcamp_service";
+
+package protos.bootcamp_service;
+
+service BootcampService {
+	rpc GetBootcampsDetails(GetBootcampsDetailsRequest) returns (GetBootcampsDetailsResponse);
+}
+
+message GetBootcampsDetailsRequest {
+	repeated string bootcamp_ids = 1;
+}
+
+message GetBootcampsDetailsResponse {
+	message Data {
+		BootcampInfo bootcamp = 1;
+		CourseInfo course = 2;
+		repeated Review reviews = 3;
+	}
+
+	repeated Data data = 1;
+}
+
+message BootcampInfo {
+	string bootcamp_id = 1;
+	string title = 2;
+	string description = 3;
+	string website = 4;
+	string email = 5;
+	string name_slug = 6;
+	repeated string careers = 7;
+}
+
+message CourseInfo {
+	string course_id = 1;
+	string title = 2;
+	string description = 3;
+}
+
+message Review {
+	string review_id = 1;
+	string user_id = 2;
+	string title = 3;
+	string message = 4;
+	int32 rating = 5;
+}

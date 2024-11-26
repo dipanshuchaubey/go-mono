@@ -1,0 +1,37 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: gateway-service
+  labels:
+    service: gateway-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      service: gateway-service
+  template:
+    metadata:
+      name: gateway-service
+      labels:
+        service: gateway-service
+    spec:
+      containers:
+        - name: gateway-service
+          image: dipanshuchaubey/gateway-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              name: user-svc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: gateway-service
+spec:
+  ports:
+    - port: 5000
+      targetPort: 5000
+      name: gateway-svc
+  selector:
+    service: gateway-service
+  type: NodePort

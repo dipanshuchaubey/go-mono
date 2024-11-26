@@ -1,0 +1,37 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: user-service
+  labels:
+    service: user-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      service: user-service
+  template:
+    metadata:
+      name: user-service
+      labels:
+        service: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: dipanshuchaubey/carthage-user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
+              name: user-svc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: user-service
+spec:
+  ports:
+    - port: 50051
+      targetPort: 50051
+      name: user-service-service
+  selector:
+    service: user-service
+  type: ClusterIP

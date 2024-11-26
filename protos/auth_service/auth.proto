@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "protos/auth_service";
+
+import "google/protobuf/timestamp.proto";
+
+package protos.auth_service;
+
+service AuthService {
+    rpc Login(LoginRequest) returns (LoginResponse) {}
+    rpc GetSession(GetSessionRequest) returns (GetSessionResponse) {}
+}
+
+message LoginRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string token = 2;
+    google.protobuf.Timestamp expiry = 3;
+}
+
+message GetSessionRequest {
+    string session_id = 1;
+}
+
+message GetSessionResponse {
+    SessionInfo data = 1;
+}
+
+message SessionInfo {
+    string session_id = 1;
+    string token = 2;
+    string signing_server = 3;
+    string user_id = 4;
+    UserRoles user_role = 5;
+}
+
+enum UserRoles {
+    USER_ROLE_UNSPECIFIED = 0;
+    USER_ROLE_ADMIN = 1;
+    USER_ROLE_DASHBOARD = 2;
+    USER_ROLE_APPROVER = 3;
+    USER_ROLE_GUEST = 4;
+}
