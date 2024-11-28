@@ -1,39 +1,40 @@
 package biz
 
 import (
+	"bytes"
 	bs "carthage/protos/bootcamp_service"
-	"carthage/services/user_service/types"
+	"carthage/services/bootcamp_service/biz/interfaces"
+	"carthage/services/bootcamp_service/config"
+	"carthage/services/bootcamp_service/constants"
+	"carthage/services/bootcamp_service/dto"
+	"carthage/services/bootcamp_service/types"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"sync"
+	"time"
 )
 
 type BootcampHandler struct {
-	bs.UnimplementedBootcampServiceServer
+	AuthToken    string
+	AuthTokenExp time.Time
+	cnf          config.Config
 }
 
-type BootcampReviews struct {
-	BootcampID string
-	Reviews    []types.ReviewDetails
-}
-type BootcampInterface interface {
-	GetBootcampsDetails(ctx context.Context, in *bs.GetBootcampsDetailsRequest) (*bs.GetBootcampsDetailsResponse, error)
-}
-
-func NewBootcampHandler() BootcampInterface {
+func NewBootcampHandler(config config.Config) interfaces.BootcampInterface {
 	return &BootcampHandler{
-		UnimplementedBootcampServiceServer: bs.UnimplementedBootcampServiceServer{},
+		AuthToken:    constants.EmptyString,
+		AuthTokenExp: time.Now(),
+		cnf:          config,
 	}
 }
 
-func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context, in *bs.GetBootcampsDetailsRequest) (*bs.GetBootcampsDetailsResponse, error) {
-	fmt.Println("GetBootcampsDetails - params BootcampIDs: ", in.BootcampIds)
-
-	bootcampRes, httpErr := http.Get("https://bootcamper.dipanshu.work/api/v1/bootcamps")
+func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context) ([]*bs.GetBootcampsDetailsResponse_Data, error) {
+	bootcampRes, httpErr := http.Get(s.cnf.EndPoints.GetBootcamps)
 	if httpErr != nil {
 		errMsg := fmt.Errorf("GetBootcampsDetails: error getting bootcamps %v", httpErr)
 		fmt.Println(errMsg)
@@ -55,12 +56,12 @@ func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context, in *bs.GetBoo
 	}
 
 	var wg sync.WaitGroup
-	var reviewsChan = make(chan BootcampReviews)
+	var reviewsChan = make(chan types.BootcampReviews)
 
 	for _, bootcampInfo := range bootcampInfos.Data {
 		wg.Add(1)
 
-		bReviews := BootcampReviews{BootcampID: bootcampInfo.ID}
+		bReviews := types.BootcampReviews{BootcampID: bootcampInfo.ID}
 
 		go func() {
 			defer func() {
@@ -125,7 +126,42 @@ func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context, in *bs.GetBoo
 		}
 	}
 
-	return &bs.GetBootcampsDetailsResponse{Data: data}, nil
+	return data, nil
+}
+
+func (s *BootcampHandler) CreateBootcamp(ctx context.Context, body dto.CreateBootcampBody) (*bs.BootcampInfo, error) {
+	// 1. Validate request body
+	if body.Title == constants.EmptyString || body.Email == constants.EmptyString {
+		errMsg := fmt.Errorf("biz.CreateBootcamp missing title or email params in request body")
+		fmt.Println(errMsg)
+		return nil, errMsg
+	}
+
+	// 2. Create Bootcamp
+	httpBody, marErr := json.Marshal(body)
+	if marErr != nil {
+		errMsg := fmt.Errorf("biz.CreateBootcamp error marshalling request body: %v", marErr)
+		fmt.Println(errMsg)
+		return nil, errMsg
+	}
+
+	var bootcamp types.CreateBootcampResponse
+
+	fmt.Println("biz.CreateBootcamp creating bootcamp with title: ", body.Title)
+	if postErr := s.postRequest(s.cnf.EndPoints.PostBootcamp, httpBody, &bootcamp, true); postErr != nil {
+		return nil, postErr
+	}
+
+	if !bootcamp.Success {
+		errMsg := fmt.Errorf("biz.CreateBootcamp error creating bootcamp: %v", bootcamp.Error)
+		fmt.Println(errMsg)
+		return nil, errMsg
+	}
+
+	var res bs.BootcampInfo
+	bootcamp.Data.ToProro(&res)
+
+	return &res, nil
 }
 
 func (s *BootcampHandler) extractReviews(reviews []types.ReviewDetails) []*bs.Review {
@@ -142,4 +178,84 @@ func (s *BootcampHandler) extractReviews(reviews []types.ReviewDetails) []*bs.Re
 	}
 
 	return reviewsProto
+}
+
+func (s *BootcampHandler) postRequest(url string, httpBody []byte, resBody any, auth bool) error {
+	client := &http.Client{}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(httpBody))
+	if err != nil {
+		errMsg := fmt.Errorf("biz.CreateBootcamp error creating POST request: %v", err)
+		fmt.Println(errMsg)
+		return errMsg
+	}
+
+	if auth {
+		token := s.getAuthToken()
+		if token == constants.EmptyString {
+			errMsg := fmt.Errorf("biz.CreateBootcamp error getting auth token")
+			fmt.Println(errMsg)
+			return errMsg
+		}
+
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, httpErr := client.Do(req)
+	if httpErr != nil {
+		errMsg := fmt.Errorf("biz.CreateBootcamp http post request error: %v", httpErr)
+		fmt.Println(errMsg)
+		return errMsg
+	}
+
+	defer resp.Body.Close()
+
+	rawRes, readErr := io.ReadAll(resp.Body)
+
+	if readErr != nil {
+		errMsg := fmt.Errorf("biz.CreateBootcamp error reading response body: %v", readErr)
+		fmt.Println(errMsg)
+		return errMsg
+	}
+
+	unmarErr := json.Unmarshal(rawRes, &resBody)
+
+	if unmarErr != nil {
+		errMsg := fmt.Errorf("biz.CreateBootcamp error unmarshalling response body: %v", unmarErr)
+		fmt.Println(errMsg)
+		return errMsg
+	}
+
+	return nil
+}
+
+func (s *BootcampHandler) getAuthToken() string {
+	if s.AuthToken == constants.EmptyString || s.isTokenExpired() {
+		s.refreshToken()
+	}
+
+	return s.AuthToken
+}
+
+func (s *BootcampHandler) isTokenExpired() bool {
+	return time.Now().After(s.AuthTokenExp)
+}
+
+func (s *BootcampHandler) refreshToken() {
+	var response types.LoginResponse
+
+	creds, fileErr := os.ReadFile(s.cnf.Credentials.BootcampAPI)
+	if fileErr != nil {
+		log.Fatalf("biz.BootcampHandler.refreshToken error reading credentials file: %v", fileErr)
+	}
+
+	s.postRequest(s.cnf.EndPoints.PostLogin, creds, &response, false)
+
+	if response.Success && response.Token != constants.EmptyString {
+		s.AuthToken = response.Token
+		s.AuthTokenExp = time.Now().Add(time.Hour * 12)
+
+		fmt.Println("biz.BootcampHandler.refreshToken Successfully updated auth token")
+	}
 }

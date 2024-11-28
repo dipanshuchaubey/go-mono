@@ -1,9 +1,11 @@
 package main
 
 import (
+	common "carthage/common/config"
 	ot "carthage/common/otel"
 	bs "carthage/protos/bootcamp_service"
-	service "carthage/services/bootcamp_service/biz"
+	service "carthage/services/bootcamp_service"
+	"carthage/services/bootcamp_service/config"
 	"context"
 	"errors"
 	"fmt"
@@ -21,7 +23,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
 
@@ -64,6 +66,10 @@ func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 	}
 }
 
+const (
+	ServiceName = "bootcamp_service"
+)
+
 func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -71,6 +77,10 @@ func main() {
 	// Channel to listen for termination signals
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+
+	// Load config
+	var config config.Config
+	common.LoadConfig(ServiceName, &config)
 
 	go func() {
 		defer wg.Done()
@@ -80,9 +90,9 @@ func main() {
 			}
 		}()
 
-		lis, err := net.Listen("tcp", ":50051")
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Service.Port))
 		if err != nil {
-			log.Fatalf("failed to listen on port 50051: %v", err)
+			log.Fatalf("failed to listen on port %s: %v", config.Service.Port, err)
 		}
 
 		options := []grpc.ServerOption{
@@ -92,7 +102,7 @@ func main() {
 
 		s := grpc.NewServer(options...)
 
-		bs.RegisterBootcampServiceServer(s, &service.BootcampHandler{})
+		bs.RegisterBootcampServiceServer(s, service.NewBootcampService(config))
 
 		reflection.Register(s)
 

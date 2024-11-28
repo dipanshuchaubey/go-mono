@@ -1,5 +1,9 @@
 package types
 
+import (
+	bs "carthage/protos/bootcamp_service"
+)
+
 type BootcampInfo struct {
 	ID          string   `json:"id"`
 	Title       string   `json:"name"`
@@ -8,6 +12,16 @@ type BootcampInfo struct {
 	Email       string   `json:"email"`
 	NameSlug    string   `json:"slug"`
 	Careers     []string `json:"careers"`
+}
+
+func (b *BootcampInfo) ToProro(proto *bs.BootcampInfo) {
+	proto.BootcampId = b.ID
+	proto.Title = b.Title
+	proto.Description = b.Description
+	proto.Email = b.Description
+	proto.NameSlug = b.NameSlug
+	proto.Website = b.Website
+	proto.Careers = b.Careers
 }
 
 type CourseInfo struct {
@@ -25,7 +39,14 @@ type ReviewDetails struct {
 }
 
 type BootcampResponse struct {
-	Data []BootcampInfo `json:"data"`
+	Success bool           `json:"success"`
+	Data    []BootcampInfo `json:"data"`
+}
+
+type CreateBootcampResponse struct {
+	Success bool         `json:"success"`
+	Data    BootcampInfo `json:"data"`
+	Error   string       `json:"error,omitempty"`
 }
 
 type CourseResponse struct {
@@ -34,4 +55,14 @@ type CourseResponse struct {
 
 type ReviewResponse struct {
 	Data []ReviewDetails `json:"data"`
+}
+
+type BootcampReviews struct {
+	BootcampID string
+	Reviews    []ReviewDetails
+}
+
+type LoginResponse struct {
+	Success bool   `json:"success"`
+	Token   string `json:"token"`
 }

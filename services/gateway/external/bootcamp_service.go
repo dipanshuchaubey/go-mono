@@ -11,6 +11,7 @@ import (
 
 type BootcampServiceInterface interface {
 	GetBootcampsDetails(ctx context.Context, req *v1.GetBootcampsDetailsRequest) (*v1.GetBootcampsDetailsResponse, error)
+	CreateBootcamp(ctx context.Context, req *v1.CreateBootcampRequest) (*v1.CreateBootcampResponse, error)
 }
 
 type BootcampServiceClient struct {
@@ -29,11 +30,24 @@ func BootcampService() BootcampServiceInterface {
 }
 
 func (b *BootcampServiceClient) GetBootcampsDetails(ctx context.Context, req *v1.GetBootcampsDetailsRequest) (*v1.GetBootcampsDetailsResponse, error) {
-	fmt.Println("Calling User Service with: ", req)
+	fmt.Println("Calling User Service GetBootcampsDetails: ", req)
 
-	res, err := b.bs.GetBootcampsDetails(ctx, &v1.GetBootcampsDetailsRequest{})
+	res, err := b.bs.GetBootcampsDetails(ctx, req)
 	if err != nil {
 		errMsg := fmt.Errorf("error calling GetBootcampDetails for BootcampIDs %s: %v", req.GetBootcampIds(), err)
+		fmt.Println(errMsg)
+		return nil, errMsg
+	}
+
+	return res, nil
+}
+
+func (b *BootcampServiceClient) CreateBootcamp(ctx context.Context, req *v1.CreateBootcampRequest) (*v1.CreateBootcampResponse, error) {
+	fmt.Println("Calling User Service CreateBootcamp: ", req)
+
+	res, err := b.bs.CreateBootcamp(ctx, req)
+	if err != nil {
+		errMsg := fmt.Errorf("error calling CreateBootcamp: %v", err)
 		fmt.Println(errMsg)
 		return nil, errMsg
 	}

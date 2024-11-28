@@ -11,7 +11,8 @@ func NewConf() map[string]routes.HandlerFunc {
 
 	HandlersMap := map[string]routes.HandlerFunc{
 		// Bootcamp Service
-		"GetBootcamps": bootcampSvc.GetBootcamps(),
+		"GetBootcamps":   bootcampSvc.GetBootcamps(),
+		"CreateBootcamp": bootcampSvc.CreateBootcamp(),
 		// User Service
 		"GetUsers": userSvc.GetUsers(),
 		"GetUser":  userSvc.GetUser(),

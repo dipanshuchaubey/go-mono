@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	BootcampService_GetBootcampsDetails_FullMethodName = "/protos.bootcamp_service.BootcampService/GetBootcampsDetails"
+	BootcampService_CreateBootcamp_FullMethodName      = "/protos.bootcamp_service.BootcampService/CreateBootcamp"
 )
 
 // BootcampServiceClient is the client API for BootcampService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BootcampServiceClient interface {
 	GetBootcampsDetails(ctx context.Context, in *GetBootcampsDetailsRequest, opts ...grpc.CallOption) (*GetBootcampsDetailsResponse, error)
+	CreateBootcamp(ctx context.Context, in *CreateBootcampRequest, opts ...grpc.CallOption) (*CreateBootcampResponse, error)
 }
 
 type bootcampServiceClient struct {
@@ -46,11 +48,21 @@ func (c *bootcampServiceClient) GetBootcampsDetails(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *bootcampServiceClient) CreateBootcamp(ctx context.Context, in *CreateBootcampRequest, opts ...grpc.CallOption) (*CreateBootcampResponse, error) {
+	out := new(CreateBootcampResponse)
+	err := c.cc.Invoke(ctx, BootcampService_CreateBootcamp_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BootcampServiceServer is the server API for BootcampService service.
 // All implementations must embed UnimplementedBootcampServiceServer
 // for forward compatibility
 type BootcampServiceServer interface {
 	GetBootcampsDetails(context.Context, *GetBootcampsDetailsRequest) (*GetBootcampsDetailsResponse, error)
+	CreateBootcamp(context.Context, *CreateBootcampRequest) (*CreateBootcampResponse, error)
 	mustEmbedUnimplementedBootcampServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedBootcampServiceServer struct {
 
 func (UnimplementedBootcampServiceServer) GetBootcampsDetails(context.Context, *GetBootcampsDetailsRequest) (*GetBootcampsDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBootcampsDetails not implemented")
+}
+func (UnimplementedBootcampServiceServer) CreateBootcamp(context.Context, *CreateBootcampRequest) (*CreateBootcampResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateBootcamp not implemented")
 }
 func (UnimplementedBootcampServiceServer) mustEmbedUnimplementedBootcampServiceServer() {}
 
@@ -92,6 +107,24 @@ func _BootcampService_GetBootcampsDetails_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BootcampService_CreateBootcamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBootcampRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BootcampServiceServer).CreateBootcamp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BootcampService_CreateBootcamp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BootcampServiceServer).CreateBootcamp(ctx, req.(*CreateBootcampRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BootcampService_ServiceDesc is the grpc.ServiceDesc for BootcampService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +135,10 @@ var BootcampService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBootcampsDetails",
 			Handler:    _BootcampService_GetBootcampsDetails_Handler,
+		},
+		{
+			MethodName: "CreateBootcamp",
+			Handler:    _BootcampService_CreateBootcamp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

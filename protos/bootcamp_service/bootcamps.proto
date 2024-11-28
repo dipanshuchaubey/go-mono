@@ -6,10 +6,21 @@ package protos.bootcamp_service;
 
 service BootcampService {
 	rpc GetBootcampsDetails(GetBootcampsDetailsRequest) returns (GetBootcampsDetailsResponse);
+	rpc CreateBootcamp(CreateBootcampRequest) returns (CreateBootcampResponse);
 }
 
 message GetBootcampsDetailsRequest {
 	repeated string bootcamp_ids = 1;
+}
+
+message CreateBootcampRequest {
+	string title = 1;
+	string description = 2;
+	string website = 3;
+	string phone = 4;
+	string email = 5;
+	repeated string careers = 6;
+	string address = 7;
 }
 
 message GetBootcampsDetailsResponse {
@@ -20,6 +31,11 @@ message GetBootcampsDetailsResponse {
 	}
 
 	repeated Data data = 1;
+}
+
+message CreateBootcampResponse {
+	bool success = 1;
+	BootcampInfo data = 2;
 }
 
 message BootcampInfo {

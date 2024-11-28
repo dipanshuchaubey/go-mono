@@ -21,3 +21,11 @@ GetBootcamps:
   timeout: 2000
   auth: true
   rateLimit: 10
+
+CreateBootcamp:
+  url: /bootcamp
+  method: POST
+  handler: CreateBootcamp
+  timeout: 4000
+  auth: true
+  rateLimit: 100
