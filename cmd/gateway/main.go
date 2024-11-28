@@ -58,7 +58,7 @@ func main() {
 		fmt.Printf("Registered route for %s: %s %s\n", cnf.Handler, cnf.Method, url)
 	}
 
-	err := http.ListenAndServe(":5000", nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", env.Service.Port), nil)
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Printf("server closed\n")
 	} else if err != nil {

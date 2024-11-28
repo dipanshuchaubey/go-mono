@@ -3,5 +3,5 @@ Service:
   port: 5000
   timeout: 5
 EndPoints:
-  grpc_user_service: localhost:50051
-  grpc_bootcamp_service: localhost:50052
+  grpc_user_service: user-service.default.svc.cluster.local:50051
+  grpc_bootcamp_service: bootcamp-service.default.svc.cluster.local:50051
