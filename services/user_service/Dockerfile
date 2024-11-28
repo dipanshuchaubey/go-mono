@@ -4,11 +4,15 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o bin
+ENV GO111MODULE=on
+
+RUN go build -o bin/user-service cmd/user_service/main.go
 
 FROM alpine:3.14
 
-COPY --from=build /app/bin/* /bin/
+COPY --from=build /app/bin/user-service /bin/user-service
+
+COPY services/user_service/config/ /mnt/secrets/
 
 EXPOSE 50051
 

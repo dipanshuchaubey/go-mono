@@ -2,6 +2,7 @@ Service:
   name: gateway
   port: 5000
   timeout: 5
+  routes_config_path: services/gateway/routes/routes.yaml
 EndPoints:
   grpc_user_service: localhost:50051
   grpc_bootcamp_service: localhost:50052

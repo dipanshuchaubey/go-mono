@@ -19,9 +19,12 @@ spec:
         - name: gateway-service
           image: dipanshuchaubey/gateway-service:latest
           imagePullPolicy: Always
+          env:
+            - name: ENV
+              value: "dev"
           ports:
             - containerPort: 5000
-              name: user-svc
+              name: gateway-svc
 ---
 kind: Service
 apiVersion: v1

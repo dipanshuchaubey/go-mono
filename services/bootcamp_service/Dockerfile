@@ -12,7 +12,8 @@ FROM alpine:3.14
 
 COPY --from=build /app/bin/bootcamp-service /bin/bootcamp-service
 
+COPY services/bootcamp_service/config/ /mnt/secrets/
+
 EXPOSE 50051
 
 CMD ["/bin/bootcamp-service"] 
-

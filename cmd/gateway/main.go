@@ -24,7 +24,7 @@ func main() {
 	var env types.Config
 	common.LoadConfig(ServiceName, &env)
 
-	configs := routes.ReadConfig()
+	configs := routes.ReadConfig(&env)
 	h := routes.NewConf(&env)
 
 	for _, cnf := range *configs {

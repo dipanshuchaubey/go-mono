@@ -2,6 +2,7 @@ Service:
   name: gateway
   port: 5000
   timeout: 5
+  routes_config_path: /mnt/secret/routes/routes.yaml
 EndPoints:
   grpc_user_service: user-service.default.svc.cluster.local:50051
   grpc_bootcamp_service: bootcamp-service.default.svc.cluster.local:50051

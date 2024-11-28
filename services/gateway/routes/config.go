@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"carthage/services/gateway/constants"
 	"carthage/services/gateway/handlers"
 	"carthage/services/gateway/types"
 	"fmt"
@@ -34,8 +33,8 @@ func readRoutesYAML(path string) (*types.Routes, error) {
 	return routes, nil
 }
 
-func ReadConfig() *types.Routes {
-	conf, routeErr := readRoutesYAML(constants.ROUTES_CONFIG_FILE_PATH)
+func ReadConfig(config *types.Config) *types.Routes {
+	conf, routeErr := readRoutesYAML(config.Service.RoutesConfigPath)
 
 	if routeErr != nil {
 		fmt.Printf("Error reading routes: %s\n", routeErr)

@@ -1,40 +1,40 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: user-service
+  name: bootcamp-service
   labels:
-    service: user-service
+    service: bootcamp-service
 spec:
   replicas: 2
   selector:
     matchLabels:
-      service: user-service
+      service: bootcamp-service
   template:
     metadata:
-      name: user-service
+      name: bootcamp-service
       labels:
-        service: user-service
+        service: bootcamp-service
     spec:
       containers:
-        - name: user-service
-          image: dipanshuchaubey/carthage-user-service:latest
+        - name: bootcamp-service
+          image: dipanshuchaubey/bootcamp-service:latest
           imagePullPolicy: Always
           env:
             - name: ENV
               value: "dev"
           ports:
             - containerPort: 50051
-              name: user-svc
+              name: bootcamp-svc
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: user-service
+  name: bootcamp-service
 spec:
   ports:
     - port: 50051
       targetPort: 50051
-      name: user-service-service
+      name: bootcamp-service-service
   selector:
-    service: user-service
+    service: bootcamp-service
   type: ClusterIP

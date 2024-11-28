@@ -2,9 +2,10 @@ package types
 
 type (
 	Service struct {
-		Name    string `yaml:"name"`
-		Port    string `yaml:"port"`
-		Timeout int    `yaml:"timeout"`
+		Name             string `yaml:"name"`
+		Port             string `yaml:"port"`
+		Timeout          int    `yaml:"timeout"`
+		RoutesConfigPath string `yaml:"routes_config_path"`
 	}
 
 	EndPoints struct {
