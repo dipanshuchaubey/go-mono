@@ -2,6 +2,7 @@ package external
 
 import (
 	v1 "carthage/protos/user_service"
+	"carthage/services/gateway/types"
 	"context"
 	"fmt"
 
@@ -18,8 +19,8 @@ type UserServiceClient struct {
 	us v1.UserServiceClient
 }
 
-func UserService() UserServiceInterface {
-	conn, conErr := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func UserService(config *types.Config) UserServiceInterface {
+	conn, conErr := grpc.NewClient(config.EndPoints.GrpcUserService, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if conErr != nil {
 		fmt.Printf("Error connecting on user service: %v\n", conErr.Error())
 	}

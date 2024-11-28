@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"carthage/services/gateway/routes"
+	"carthage/services/gateway/types"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -47,7 +47,7 @@ func PopulateSuccessRespose(data interface{}) []byte {
 	return jsonData
 }
 
-func SetParamsInContext(ctx context.Context, cnf routes.Route, r *http.Request) context.Context {
+func SetParamsInContext(ctx context.Context, cnf types.Route, r *http.Request) context.Context {
 	if strings.Contains(cnf.URL, "{") {
 		paramArr := strings.Split(cnf.URL, "/")
 		rawParam := paramArr[len(paramArr)-1]

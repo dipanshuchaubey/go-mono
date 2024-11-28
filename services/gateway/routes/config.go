@@ -1,32 +1,18 @@
 package routes
 
 import (
-	"context"
+	"carthage/services/gateway/constants"
+	"carthage/services/gateway/handlers"
+	"carthage/services/gateway/types"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 
 	"gopkg.in/yaml.v2"
 )
 
-type (
-	Route struct {
-		URL       string `yaml:"url"`
-		Method    string `yaml:"method"`
-		Handler   string `yaml:"handler"`
-		Timeout   int    `yaml:"timeout"`
-		Auth      bool   `yaml:"auth"`
-		RateLimit int    `yaml:"rateLimit"`
-	}
-
-	Routes map[string]Route
-
-	HandlerFunc func(ctx context.Context, req *http.Request) (interface{}, error)
-)
-
-func readRoutesYAML(path string) (*Routes, error) {
-	var routes *Routes
+func readRoutesYAML(path string) (*types.Routes, error) {
+	var routes *types.Routes
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -48,8 +34,8 @@ func readRoutesYAML(path string) (*Routes, error) {
 	return routes, nil
 }
 
-func ReadConfig() *Routes {
-	conf, routeErr := readRoutesYAML("/Users/dipanshu/Developer/private/go-mono/services/gateway/routes/routes.yaml")
+func ReadConfig() *types.Routes {
+	conf, routeErr := readRoutesYAML(constants.ROUTES_CONFIG_FILE_PATH)
 
 	if routeErr != nil {
 		fmt.Printf("Error reading routes: %s\n", routeErr)
@@ -57,4 +43,20 @@ func ReadConfig() *Routes {
 	}
 
 	return conf
+}
+
+func NewConf(config *types.Config) map[string]types.HandlerFunc {
+	bootcampSvc := handlers.BootcampHandler(config)
+	userSvc := handlers.UserHandler(config)
+
+	HandlersMap := map[string]types.HandlerFunc{
+		// Bootcamp Service
+		"GetBootcamps":   bootcampSvc.GetBootcamps(),
+		"CreateBootcamp": bootcampSvc.CreateBootcamp(),
+		// User Service
+		"GetUsers": userSvc.GetUsers(),
+		"GetUser":  userSvc.GetUser(),
+	}
+
+	return HandlersMap
 }

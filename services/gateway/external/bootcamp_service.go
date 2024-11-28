@@ -2,6 +2,7 @@ package external
 
 import (
 	v1 "carthage/protos/bootcamp_service"
+	"carthage/services/gateway/types"
 	"context"
 	"fmt"
 
@@ -18,8 +19,8 @@ type BootcampServiceClient struct {
 	bs v1.BootcampServiceClient
 }
 
-func BootcampService() BootcampServiceInterface {
-	conn, conErr := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func BootcampService(config *types.Config) BootcampServiceInterface {
+	conn, conErr := grpc.NewClient(config.EndPoints.GrpcBootcampService, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if conErr != nil {
 		fmt.Printf("Error connecting on bootcamp service: %v\n", conErr.Error())
 	}

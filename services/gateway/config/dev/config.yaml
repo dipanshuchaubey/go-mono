@@ -1,0 +1,7 @@
+Service:
+  name: gateway
+  port: 5000
+  timeout: 5
+EndPoints:
+  grpc_user_service: localhost:50051
+  grpc_bootcamp_service: localhost:50052

@@ -3,7 +3,7 @@ package handlers
 import (
 	pb "carthage/protos/bootcamp_service"
 	"carthage/services/gateway/external"
-	"carthage/services/gateway/routes"
+	"carthage/services/gateway/types"
 	"context"
 	"fmt"
 	"io"
@@ -11,20 +11,20 @@ import (
 )
 
 type BootcampHandlerInterface interface {
-	GetBootcamps() routes.HandlerFunc
-	CreateBootcamp() routes.HandlerFunc
+	GetBootcamps() types.HandlerFunc
+	CreateBootcamp() types.HandlerFunc
 }
 
 type bootcampHandler struct {
 	bs external.BootcampServiceInterface
 }
 
-func BootcampHandler() BootcampHandlerInterface {
-	bs := external.BootcampService()
+func BootcampHandler(config *types.Config) BootcampHandlerInterface {
+	bs := external.BootcampService(config)
 	return &bootcampHandler{bs}
 }
 
-func (h *bootcampHandler) GetBootcamps() routes.HandlerFunc {
+func (h *bootcampHandler) GetBootcamps() types.HandlerFunc {
 	return func(ctx context.Context, req *http.Request) (interface{}, error) {
 		bootcamps, bootcampErr := h.bs.GetBootcampsDetails(ctx, &pb.GetBootcampsDetailsRequest{BootcampIds: []string{""}})
 		if bootcampErr != nil {
@@ -35,7 +35,7 @@ func (h *bootcampHandler) GetBootcamps() routes.HandlerFunc {
 	}
 }
 
-func (h *bootcampHandler) CreateBootcamp() routes.HandlerFunc {
+func (h *bootcampHandler) CreateBootcamp() types.HandlerFunc {
 	return func(ctx context.Context, req *http.Request) (interface{}, error) {
 		body, _ := io.ReadAll(req.Body)
 		fmt.Println("Creating Bootcamp: ", string(body))

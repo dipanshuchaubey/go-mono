@@ -1,9 +1,10 @@
 package main
 
 import (
-	"carthage/services/gateway/config"
+	common "carthage/common/config"
 	"carthage/services/gateway/constants"
 	"carthage/services/gateway/routes"
+	"carthage/services/gateway/types"
 	"carthage/services/gateway/utils"
 	"context"
 	"errors"
@@ -12,11 +13,19 @@ import (
 	"os"
 )
 
+const (
+	ServiceName = "gateway"
+)
+
 func main() {
 	// auth.Auth()
 
+	// Load env based config
+	var env types.Config
+	common.LoadConfig(ServiceName, &env)
+
 	configs := routes.ReadConfig()
-	h := config.NewConf()
+	h := routes.NewConf(&env)
 
 	for _, cnf := range *configs {
 		handlerCaller, found := h[cnf.Handler]

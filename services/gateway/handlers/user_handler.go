@@ -4,27 +4,27 @@ import (
 	pb "carthage/protos/user_service"
 	"carthage/services/gateway/constants"
 	"carthage/services/gateway/external"
-	"carthage/services/gateway/routes"
+	"carthage/services/gateway/types"
 	"context"
 	"fmt"
 	"net/http"
 )
 
 type HandlerInterface interface {
-	GetUsers() routes.HandlerFunc
-	GetUser() routes.HandlerFunc
+	GetUsers() types.HandlerFunc
+	GetUser() types.HandlerFunc
 }
 
 type userHandler struct {
 	us external.UserServiceInterface
 }
 
-func UserHandler() HandlerInterface {
-	us := external.UserService()
+func UserHandler(config *types.Config) HandlerInterface {
+	us := external.UserService(config)
 	return &userHandler{us}
 }
 
-func (h *userHandler) GetUsers() routes.HandlerFunc {
+func (h *userHandler) GetUsers() types.HandlerFunc {
 	return func(ctx context.Context, req *http.Request) (interface{}, error) {
 		users, userErr := h.us.GetUsers(ctx, &pb.GetUsersRequest{TenantId: ""})
 		if userErr != nil {
@@ -35,7 +35,7 @@ func (h *userHandler) GetUsers() routes.HandlerFunc {
 	}
 }
 
-func (h *userHandler) GetUser() routes.HandlerFunc {
+func (h *userHandler) GetUser() types.HandlerFunc {
 	return func(ctx context.Context, req *http.Request) (interface{}, error) {
 		userID := ctx.Value("id").(string)
 
