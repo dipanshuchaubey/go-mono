@@ -1,4 +1,8 @@
 FILES = $(shell find protos -name "*proto")
+SERVICE = $(if $(service),$(service),all)
+
+# Replace _ with - in service name
+BUILD_NAME = $(echo $$SERVICE | tr '_' '-')
 
 .PHONY: protos
 protos:
@@ -7,4 +11,24 @@ protos:
 	$(FILES)
 
 build:
-	go build -o bin/user-service
+	@if [ "$(SERVICE)" = "all" ]; then \
+		for dir in cmd/*; do \
+			echo "Building $$dir"; \
+			build_name=$$(basename $$dir | tr '_' '-'); \
+			go build -o bin/$$build_name $$dir/main.go; \
+			echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-="; \
+		done; \
+	else \
+		go build -o bin/$(BUILD_NAME) cmd/$(SERVICE)/main.go; \
+	fi
+
+run:
+	@if [ "$(SERVICE)" = "all" ]; then \
+		for dir in cmd/*; do \
+			echo "Running $$dir"; \
+			go run $$dir/main.go; \
+			echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-="; \
+		done; \
+	else \
+		go run cmd/$(SERVICE)/main.go; \
+	fi

@@ -1,9 +1,9 @@
 Service:
-  name: bootcamp-service
-  port: 50052
+  name: user_service
+  port: 50051
   timeout: 5
-Credentials:
-  bootcamp_api: /Users/dipanshu/Developer/private/go-mono/secrets/bootcamp_auth.key
+Database:
+
 EndPoints:
   post_login: https://bootcamper.dipanshu.work/api/v1/auth/login
   get_bootcamps: https://bootcamper.dipanshu.work/api/v1/bootcamps

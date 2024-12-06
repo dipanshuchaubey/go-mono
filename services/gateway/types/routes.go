@@ -11,4 +11,6 @@ type (
 	}
 
 	Routes map[string]Route
+
+	RoutesMap map[string]map[string]Route
 )

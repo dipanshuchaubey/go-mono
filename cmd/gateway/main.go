@@ -24,38 +24,43 @@ func main() {
 	var env types.Config
 	common.LoadConfig(ServiceName, &env)
 
-	configs := routes.ReadConfig(&env)
-	h := routes.NewConf(&env)
+	configs := routes.RouteConfig(&env)
+	h := routes.NewRouteMap(&env)
 
-	for _, cnf := range *configs {
-		handlerCaller, found := h[cnf.Handler]
-		if !found {
-			fmt.Println("Handler not found: ", cnf.Handler)
-			continue
-		}
-
+	for url, route := range configs {
 		ctx := context.Background()
-		url := constants.API_URL_PREFIX + cnf.URL
+		url := constants.API_URL_PREFIX + url
 
 		handler := func(w http.ResponseWriter, r *http.Request) {
-			ctx := utils.SetParamsInContext(ctx, cnf, r)
+			for _, cnf := range route {
+				ctx := utils.SetParamsInContext(ctx, cnf, r)
 
-			if cnf.Method == r.Method {
-				data, err := handlerCaller(ctx, r)
+				handlerCaller, found := h[cnf.Handler]
+				if !found {
+					fmt.Println("Handler not found: ", cnf.Handler)
+					continue
+				}
 
-				w.Header().Set("Content-Type", "application/json")
+				if cnf.Method == r.Method {
+					data, err := handlerCaller(ctx, r)
 
-				if err != nil {
-					w.Write(utils.PopulateErrorRespose(err))
-				} else {
-					w.Write(utils.PopulateSuccessRespose(data))
+					w.Header().Set("Content-Type", "application/json")
+
+					if err != nil {
+						w.Write(utils.PopulateErrorRespose(err))
+					} else {
+						w.Write(utils.PopulateSuccessRespose(data))
+					}
 				}
 			}
+
 		}
 
 		http.Handle(url, utils.Middleware(http.HandlerFunc(handler)))
 
-		fmt.Printf("Registered route for %s: %s %s\n", cnf.Handler, cnf.Method, url)
+		for _, cnf := range route {
+			fmt.Printf("Registered route for %s: %s %s\n", cnf.Handler, cnf.Method, url)
+		}
 	}
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", env.Service.Port), nil)

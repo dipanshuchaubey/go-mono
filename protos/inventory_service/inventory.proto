@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+option go_package = "protos/inventory_service";
+
+import "google/protobuf/timestamp.proto";
+
+package protos.inventory_service;
+
+enum EntityTypes {
+	ENTITY_TYPE_UNSPECIFIED = 0;
+	ENTITY_TYPE_INVENTORY_LISTING = 1;
+}
+
+enum InventoryStatus {
+	INVENTORY_STATUS_UNSPECIFIED = 0;
+	INVENTORY_STATUS_LISTED = 1;
+	INVENTORY_STATUS_UNLISTED = 2;
+	INVENTORY_STATUS_DRAFT = 3;
+}
+
+message InventoryMetadata {
+	string sub_title = 1;
+	string thumbnail = 2;
+	string flag_name = 3;
+}
+
+message CreateInventoryBody {
+	string tenant_id = 1;
+	EntityTypes entity_type = 2;
+	InventoryStatus status = 3;
+	string title = 4;
+	google.protobuf.Timestamp listing_date = 5;
+	google.protobuf.Timestamp expiry_date = 6;
+	InventoryMetadata meta = 7;
+}
+
+message InventoryListingRequest {
+	string tenant_id = 1;
+	EntityTypes entity_type = 2;
+	InventoryStatus status = 3;
+}
+
+message CreateInventoryRequest {
+	CreateInventoryRequest data = 1;
+}
+
+message UpdateInventoryRequest {
+	CreateInventoryRequest data = 1;
+}
+
+message BulkCreateInventoryRequest {
+	repeated CreateInventoryBody data = 1;	
+}
+
+message InventoryInfo {
+	string id = 1;
+	string tenant_id = 2;
+	EntityTypes entity_type = 3;
+	InventoryStatus status = 4;
+	string title = 5;
+	google.protobuf.Timestamp listing_date = 6;
+	google.protobuf.Timestamp expiry_date = 7;
+	InventoryMetadata meta = 8;
+}
+
+message Pagination {
+	int32 total_count = 1;
+	int32 current_page = 2;
+	int32 total_pages = 3;
+}
+
+message InventoryListingResponse {
+	repeated InventoryInfo data = 1;
+	Pagination pagination = 2;
+}
+
+message CreateInventoryResponse {
+	InventoryInfo data = 1;
+}
+
+message UpdateInventoryResponse {
+	InventoryInfo data = 1;
+}
+
+message BulkCreateInventoryResponse {
+	repeated InventoryInfo data = 1;
+	int32 success_count = 2;
+	int32 failure_count = 3;
+}
+
+
+service InventoryService {
+	rpc GetInventoryListing(InventoryListingRequest) returns (InventoryListingResponse);
+	rpc CreateInventory(CreateInventoryRequest) returns (CreateInventoryResponse);
+	rpc UpdateInventory(UpdateInventoryRequest) returns (UpdateInventoryResponse);
+	rpc BulkCreateInventory(BulkCreateInventoryRequest) returns (BulkCreateInventoryResponse);
+}

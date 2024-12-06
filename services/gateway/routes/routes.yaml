@@ -23,7 +23,7 @@ GetBootcamps:
   rateLimit: 10
 
 CreateBootcamp:
-  url: /bootcamp
+  url: /bootcamps
   method: POST
   handler: CreateBootcamp
   timeout: 4000

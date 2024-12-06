@@ -33,7 +33,7 @@ func readRoutesYAML(path string) (*types.Routes, error) {
 	return routes, nil
 }
 
-func ReadConfig(config *types.Config) *types.Routes {
+func RouteConfig(config *types.Config) types.RoutesMap {
 	conf, routeErr := readRoutesYAML(config.Service.RoutesConfigPath)
 
 	if routeErr != nil {
@@ -41,10 +41,21 @@ func ReadConfig(config *types.Config) *types.Routes {
 		os.Exit(1)
 	}
 
-	return conf
+	var routesMap = make(types.RoutesMap)
+
+	for _, cnf := range *conf {
+		if _, ok := routesMap[cnf.URL]; !ok {
+			routesMap[cnf.URL] = make(map[string]types.Route)
+			routesMap[cnf.URL][cnf.Method] = cnf
+		} else {
+			routesMap[cnf.URL][cnf.Method] = cnf
+		}
+	}
+
+	return routesMap
 }
 
-func NewConf(config *types.Config) map[string]types.HandlerFunc {
+func NewRouteMap(config *types.Config) map[string]types.HandlerFunc {
 	bootcampSvc := handlers.BootcampHandler(config)
 	userSvc := handlers.UserHandler(config)
 
