@@ -1,7 +1,7 @@
 package types
 
 import (
-	bs "carthage/protos/bootcamp_service"
+	pbty "carthage/protos/bootcamp_service/types"
 )
 
 type BootcampInfo struct {
@@ -14,7 +14,7 @@ type BootcampInfo struct {
 	Careers     []string `json:"careers"`
 }
 
-func (b *BootcampInfo) ToProro(proto *bs.BootcampInfo) {
+func (b *BootcampInfo) ToProro(proto *pbty.BootcampInfo) {
 	proto.BootcampId = b.ID
 	proto.Title = b.Title
 	proto.Description = b.Description

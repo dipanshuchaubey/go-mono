@@ -1,63 +1,13 @@
 syntax = "proto3";
 
-option go_package = "protos/bootcamp_service";
+option go_package = "carthage/protos/bootcamp_service;v1";
 
-package protos.bootcamp_service;
+package bootcamp_service.v1;
+
+import "protos/bootcamp_service/request/bootcamps.proto";
+import "protos/bootcamp_service/response/bootcamps.proto";
 
 service BootcampService {
-	rpc GetBootcampsDetails(GetBootcampsDetailsRequest) returns (GetBootcampsDetailsResponse);
-	rpc CreateBootcamp(CreateBootcampRequest) returns (CreateBootcampResponse);
-}
-
-message GetBootcampsDetailsRequest {
-	repeated string bootcamp_ids = 1;
-}
-
-message CreateBootcampRequest {
-	string title = 1;
-	string description = 2;
-	string website = 3;
-	string phone = 4;
-	string email = 5;
-	repeated string careers = 6;
-	string address = 7;
-}
-
-message GetBootcampsDetailsResponse {
-	message Data {
-		BootcampInfo bootcamp = 1;
-		CourseInfo course = 2;
-		repeated Review reviews = 3;
-	}
-
-	repeated Data data = 1;
-}
-
-message CreateBootcampResponse {
-	bool success = 1;
-	BootcampInfo data = 2;
-}
-
-message BootcampInfo {
-	string bootcamp_id = 1;
-	string title = 2;
-	string description = 3;
-	string website = 4;
-	string email = 5;
-	string name_slug = 6;
-	repeated string careers = 7;
-}
-
-message CourseInfo {
-	string course_id = 1;
-	string title = 2;
-	string description = 3;
-}
-
-message Review {
-	string review_id = 1;
-	string user_id = 2;
-	string title = 3;
-	string message = 4;
-	int32 rating = 5;
+	rpc GetBootcampsDetails(request.GetBootcampsDetailsRequest) returns (response.GetBootcampsDetailsResponse);
+	rpc CreateBootcamp(request.CreateBootcampRequest) returns (response.CreateBootcampResponse);
 }

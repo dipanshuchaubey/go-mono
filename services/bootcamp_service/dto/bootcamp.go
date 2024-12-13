@@ -1,7 +1,7 @@
 package dto
 
 import (
-	bs "carthage/protos/bootcamp_service"
+	pbrq "carthage/protos/bootcamp_service/request"
 )
 
 type CreateBootcampBody struct {
@@ -14,7 +14,7 @@ type CreateBootcampBody struct {
 	Address     string   `json:"address"`
 }
 
-func (b *CreateBootcampBody) FromProto(body *bs.CreateBootcampRequest) {
+func (b *CreateBootcampBody) FromProto(body *pbrq.CreateBootcampRequest) {
 	b.Title = body.Title
 	b.Description = body.Description
 	b.Website = body.Website

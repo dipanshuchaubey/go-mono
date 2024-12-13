@@ -1,7 +1,9 @@
 package service
 
 import (
-	bs "carthage/protos/bootcamp_service"
+	v1 "carthage/protos/bootcamp_service"
+	pbrq "carthage/protos/bootcamp_service/request"
+	pbrs "carthage/protos/bootcamp_service/response"
 	bootcamp "carthage/services/bootcamp_service/biz"
 	"carthage/services/bootcamp_service/biz/interfaces"
 	"carthage/services/bootcamp_service/config"
@@ -11,18 +13,18 @@ import (
 )
 
 type BootcampService struct {
-	bs.UnimplementedBootcampServiceServer
+	v1.UnimplementedBootcampServiceServer
 	handler interfaces.BootcampInterface
 }
 
 func NewBootcampService(config config.Config) *BootcampService {
 	return &BootcampService{
-		UnimplementedBootcampServiceServer: bs.UnimplementedBootcampServiceServer{},
+		UnimplementedBootcampServiceServer: v1.UnimplementedBootcampServiceServer{},
 		handler:                            bootcamp.NewBootcampHandler(config),
 	}
 }
 
-func (s *BootcampService) GetBootcampsDetails(ctx context.Context, in *bs.GetBootcampsDetailsRequest) (*bs.GetBootcampsDetailsResponse, error) {
+func (s *BootcampService) GetBootcampsDetails(ctx context.Context, in *pbrq.GetBootcampsDetailsRequest) (*pbrs.GetBootcampsDetailsResponse, error) {
 	fmt.Println("Received GetBootcampsDetails request")
 
 	res, err := s.handler.GetBootcampsDetails(ctx)
@@ -32,10 +34,10 @@ func (s *BootcampService) GetBootcampsDetails(ctx context.Context, in *bs.GetBoo
 		return nil, errMsg
 	}
 
-	return &bs.GetBootcampsDetailsResponse{Data: res}, nil
+	return &pbrs.GetBootcampsDetailsResponse{Data: res}, nil
 }
 
-func (s *BootcampService) CreateBootcamp(ctx context.Context, in *bs.CreateBootcampRequest) (*bs.CreateBootcampResponse, error) {
+func (s *BootcampService) CreateBootcamp(ctx context.Context, in *pbrq.CreateBootcampRequest) (*pbrs.CreateBootcampResponse, error) {
 	fmt.Printf("Received CreateBootcamp request: %v\n", in)
 
 	var body dto.CreateBootcampBody
@@ -46,5 +48,5 @@ func (s *BootcampService) CreateBootcamp(ctx context.Context, in *bs.CreateBootc
 		return nil, err
 	}
 
-	return &bs.CreateBootcampResponse{Data: res, Success: true}, nil
+	return &pbrs.CreateBootcampResponse{Data: res, Success: true}, nil
 }

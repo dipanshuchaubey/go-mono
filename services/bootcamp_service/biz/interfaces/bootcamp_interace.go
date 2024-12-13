@@ -1,12 +1,13 @@
 package interfaces
 
 import (
-	bs "carthage/protos/bootcamp_service"
+	pbrs "carthage/protos/bootcamp_service/response"
+	pbty "carthage/protos/bootcamp_service/types"
 	"carthage/services/bootcamp_service/dto"
 	"context"
 )
 
 type BootcampInterface interface {
-	GetBootcampsDetails(ctx context.Context) ([]*bs.GetBootcampsDetailsResponse_Data, error)
-	CreateBootcamp(ctx context.Context, body dto.CreateBootcampBody) (*bs.BootcampInfo, error)
+	GetBootcampsDetails(ctx context.Context) ([]*pbrs.GetBootcampsDetailsResponse_Data, error)
+	CreateBootcamp(ctx context.Context, body dto.CreateBootcampBody) (*pbty.BootcampInfo, error)
 }

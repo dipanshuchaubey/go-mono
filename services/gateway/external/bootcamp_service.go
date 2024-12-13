@@ -2,6 +2,8 @@ package external
 
 import (
 	v1 "carthage/protos/bootcamp_service"
+	pbrq "carthage/protos/bootcamp_service/request"
+	pbrs "carthage/protos/bootcamp_service/response"
 	"carthage/services/gateway/types"
 	"context"
 	"fmt"
@@ -11,8 +13,8 @@ import (
 )
 
 type BootcampServiceInterface interface {
-	GetBootcampsDetails(ctx context.Context, req *v1.GetBootcampsDetailsRequest) (*v1.GetBootcampsDetailsResponse, error)
-	CreateBootcamp(ctx context.Context, req *v1.CreateBootcampRequest) (*v1.CreateBootcampResponse, error)
+	GetBootcampsDetails(ctx context.Context, req *pbrq.GetBootcampsDetailsRequest) (*pbrs.GetBootcampsDetailsResponse, error)
+	CreateBootcamp(ctx context.Context, req *pbrq.CreateBootcampRequest) (*pbrs.CreateBootcampResponse, error)
 }
 
 type BootcampServiceClient struct {
@@ -30,7 +32,7 @@ func BootcampService(config *types.Config) BootcampServiceInterface {
 	return &BootcampServiceClient{c}
 }
 
-func (b *BootcampServiceClient) GetBootcampsDetails(ctx context.Context, req *v1.GetBootcampsDetailsRequest) (*v1.GetBootcampsDetailsResponse, error) {
+func (b *BootcampServiceClient) GetBootcampsDetails(ctx context.Context, req *pbrq.GetBootcampsDetailsRequest) (*pbrs.GetBootcampsDetailsResponse, error) {
 	fmt.Println("Calling User Service GetBootcampsDetails: ", req)
 
 	res, err := b.bs.GetBootcampsDetails(ctx, req)
@@ -43,7 +45,7 @@ func (b *BootcampServiceClient) GetBootcampsDetails(ctx context.Context, req *v1
 	return res, nil
 }
 
-func (b *BootcampServiceClient) CreateBootcamp(ctx context.Context, req *v1.CreateBootcampRequest) (*v1.CreateBootcampResponse, error) {
+func (b *BootcampServiceClient) CreateBootcamp(ctx context.Context, req *pbrq.CreateBootcampRequest) (*pbrs.CreateBootcampResponse, error) {
 	fmt.Println("Calling User Service CreateBootcamp: ", req)
 
 	res, err := b.bs.CreateBootcamp(ctx, req)
