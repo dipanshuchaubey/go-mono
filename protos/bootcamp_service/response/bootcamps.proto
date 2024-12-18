@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "carthage/protos/bootcamp_service/response;response";
+
+package bootcamp_service.response;
+
+import "protos/bootcamp_service/types/bootcamps.proto";
+
+message GetBootcampsDetailsResponse {
+	message Data {
+		types.BootcampInfo bootcamp = 1;
+		types.CourseInfo course = 2;
+		repeated types.Review reviews = 3;
+	}
+
+	repeated Data data = 1;
+}
+
+message CreateBootcampResponse {
+	bool success = 1;
+	types.BootcampInfo data = 2;
+}

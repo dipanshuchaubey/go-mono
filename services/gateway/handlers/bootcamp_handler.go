@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	pb "carthage/protos/bootcamp_service"
+	pbrq "carthage/protos/bootcamp_service/request"
 	"carthage/services/gateway/external"
 	"carthage/services/gateway/types"
 	"context"
@@ -26,7 +26,7 @@ func BootcampHandler(config *types.Config) BootcampHandlerInterface {
 
 func (h *bootcampHandler) GetBootcamps() types.HandlerFunc {
 	return func(ctx context.Context, req *http.Request) (interface{}, error) {
-		bootcamps, bootcampErr := h.bs.GetBootcampsDetails(ctx, &pb.GetBootcampsDetailsRequest{BootcampIds: []string{""}})
+		bootcamps, bootcampErr := h.bs.GetBootcampsDetails(ctx, &pbrq.GetBootcampsDetailsRequest{BootcampIds: []string{""}})
 		if bootcampErr != nil {
 			return nil, bootcampErr
 		}
@@ -40,7 +40,7 @@ func (h *bootcampHandler) CreateBootcamp() types.HandlerFunc {
 		body, _ := io.ReadAll(req.Body)
 		fmt.Println("Creating Bootcamp: ", string(body))
 
-		bootcamp, bootcampErr := h.bs.CreateBootcamp(ctx, &pb.CreateBootcampRequest{})
+		bootcamp, bootcampErr := h.bs.CreateBootcamp(ctx, &pbrq.CreateBootcampRequest{})
 		if bootcampErr != nil {
 			return nil, bootcampErr
 		}

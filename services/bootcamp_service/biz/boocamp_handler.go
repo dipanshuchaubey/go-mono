@@ -2,7 +2,8 @@ package biz
 
 import (
 	"bytes"
-	bs "carthage/protos/bootcamp_service"
+	pbrs "carthage/protos/bootcamp_service/response"
+	pbty "carthage/protos/bootcamp_service/types"
 	"carthage/services/bootcamp_service/biz/interfaces"
 	"carthage/services/bootcamp_service/config"
 	"carthage/services/bootcamp_service/constants"
@@ -33,7 +34,7 @@ func NewBootcampHandler(config config.Config) interfaces.BootcampInterface {
 	}
 }
 
-func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context) ([]*bs.GetBootcampsDetailsResponse_Data, error) {
+func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context) ([]*pbrs.GetBootcampsDetailsResponse_Data, error) {
 	bootcampRes, httpErr := http.Get(s.cnf.EndPoints.GetBootcamps)
 	if httpErr != nil {
 		errMsg := fmt.Errorf("GetBootcampsDetails: error getting bootcamps %v", httpErr)
@@ -100,14 +101,14 @@ func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context) ([]*bs.GetBoo
 		close(reviewsChan)
 	}()
 
-	var data []*bs.GetBootcampsDetailsResponse_Data
+	var data []*pbrs.GetBootcampsDetailsResponse_Data
 
 	for review := range reviewsChan {
 		for _, bootcamps := range bootcampInfos.Data {
 			if review.BootcampID == bootcamps.ID {
-				var info bs.GetBootcampsDetailsResponse_Data
+				var info pbrs.GetBootcampsDetailsResponse_Data
 
-				info.Bootcamp = &bs.BootcampInfo{
+				info.Bootcamp = &pbty.BootcampInfo{
 					BootcampId:  bootcamps.ID,
 					Title:       bootcamps.Title,
 					Description: bootcamps.Description,
@@ -129,7 +130,7 @@ func (s *BootcampHandler) GetBootcampsDetails(ctx context.Context) ([]*bs.GetBoo
 	return data, nil
 }
 
-func (s *BootcampHandler) CreateBootcamp(ctx context.Context, body dto.CreateBootcampBody) (*bs.BootcampInfo, error) {
+func (s *BootcampHandler) CreateBootcamp(ctx context.Context, body dto.CreateBootcampBody) (*pbty.BootcampInfo, error) {
 	// 1. Validate request body
 	if body.Title == constants.EmptyString || body.Email == constants.EmptyString {
 		errMsg := fmt.Errorf("biz.CreateBootcamp missing title or email params in request body")
@@ -158,17 +159,17 @@ func (s *BootcampHandler) CreateBootcamp(ctx context.Context, body dto.CreateBoo
 		return nil, errMsg
 	}
 
-	var res bs.BootcampInfo
+	var res pbty.BootcampInfo
 	bootcamp.Data.ToProro(&res)
 
 	return &res, nil
 }
 
-func (s *BootcampHandler) extractReviews(reviews []types.ReviewDetails) []*bs.Review {
-	var reviewsProto []*bs.Review
+func (s *BootcampHandler) extractReviews(reviews []types.ReviewDetails) []*pbty.Review {
+	var reviewsProto []*pbty.Review
 
 	for _, review := range reviews {
-		reviewsProto = append(reviewsProto, &bs.Review{
+		reviewsProto = append(reviewsProto, &pbty.Review{
 			ReviewId: review.ID,
 			Title:    review.Title,
 			Message:  review.MessageInfos,
