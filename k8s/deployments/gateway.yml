@@ -22,6 +22,8 @@ spec:
           env:
             - name: ENV
               value: "dev"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=gateway-service,service.version=1.6"
           ports:
             - containerPort: 5000
               name: gateway-svc

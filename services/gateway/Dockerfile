@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS build
+FROM golang:1.23-alpine AS build
 
 WORKDIR /app
 
@@ -15,6 +15,6 @@ COPY --from=build /app/bin/gateway /bin/gateway
 COPY services/gateway/config/ /mnt/secrets/
 COPY services/gateway/routes/routes.yaml /mnt/secret/routes/routes.yaml
 
-EXPOSE 50051
+EXPOSE 5000
 
 CMD ["/bin/gateway"]
