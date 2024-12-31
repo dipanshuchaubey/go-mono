@@ -1,10 +1,11 @@
 package interfaces
 
 import (
-	pbrs "carthage/protos/bootcamp_service/response"
-	pbty "carthage/protos/bootcamp_service/types"
 	"carthage/services/bootcamp_service/dto"
 	"context"
+
+	pbrs "github.com/dipanshuchaubey/protos-package/bootcamp_service/response"
+	pbty "github.com/dipanshuchaubey/protos-package/bootcamp_service/types"
 )
 
 type BootcampInterface interface {
