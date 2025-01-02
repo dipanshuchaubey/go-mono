@@ -2,6 +2,7 @@ package main
 
 import (
 	common "carthage/common/config"
+	ot "carthage/common/otel"
 	"carthage/services/gateway/constants"
 	"carthage/services/gateway/routes"
 	"carthage/services/gateway/types"
@@ -11,14 +12,35 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel"
 )
 
 const (
 	ServiceName = "gateway"
 )
 
+var (
+	Tracer = otel.Tracer(constants.ServiceName)
+	logger = otelslog.NewLogger(constants.ServiceName)
+)
+
 func main() {
 	// auth.Auth()
+
+	otelShutdown, otErr := ot.SetupOTelSDK()
+	if otErr != nil {
+		return
+	}
+
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err := errors.Join(otErr, otelShutdown(context.Background()))
+		if err != nil {
+			logger.Error(fmt.Sprintf("Error shutting down OTEL: %v", err))
+		}
+	}()
 
 	// Load env based config
 	var env types.Config
@@ -37,20 +59,16 @@ func main() {
 
 				handlerCaller, found := h[cnf.Handler]
 				if !found {
-					fmt.Println("Handler not found: ", cnf.Handler)
+					logger.ErrorContext(ctx, fmt.Sprintf("Handler not found: %v", cnf.Handler))
 					continue
 				}
 
 				if cnf.Method == r.Method {
+					ctx, span := Tracer.Start(ctx, "handler."+cnf.Handler)
+					defer span.End()
+
 					data, err := handlerCaller(ctx, r)
-
-					w.Header().Set("Content-Type", "application/json")
-
-					if err != nil {
-						w.Write(utils.PopulateErrorRespose(err))
-					} else {
-						w.Write(utils.PopulateSuccessRespose(data))
-					}
+					setResponse(&w, data, err)
 				}
 			}
 
@@ -59,15 +77,31 @@ func main() {
 		http.Handle(url, utils.Middleware(http.HandlerFunc(handler)))
 
 		for _, cnf := range route {
-			fmt.Printf("Registered route for %s: %s %s\n", cnf.Handler, cnf.Method, url)
+			logger.InfoContext(ctx, fmt.Sprintf("Registered route for %s: %s %s", cnf.Handler, cnf.Method, url))
 		}
 	}
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", env.Service.Port), nil)
 	if errors.Is(err, http.ErrServerClosed) {
-		fmt.Printf("server closed\n")
+		logger.Info("server closed")
 	} else if err != nil {
-		fmt.Printf("error starting server: %s\n", err)
+		logger.Error(fmt.Sprintf("error starting server: %v", err))
 		os.Exit(1)
+	}
+}
+
+func setResponse(w *http.ResponseWriter, data interface{}, err error) {
+	(*w).Header().Set("Content-Type", "application/json")
+
+	var response []byte
+
+	if err != nil {
+		response = utils.PopulateErrorResponse(err)
+	} else {
+		response = utils.PopulateSuccessResponse(data)
+	}
+
+	if _, err := (*w).Write(response); err != nil {
+		logger.Error(fmt.Sprintf("Error writing response: %v", err))
 	}
 }

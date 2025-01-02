@@ -1,6 +1,8 @@
 package types
 
 type (
+	ContextKey string
+
 	Service struct {
 		Name             string `yaml:"name"`
 		Port             string `yaml:"port"`

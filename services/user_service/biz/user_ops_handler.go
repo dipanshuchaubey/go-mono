@@ -3,40 +3,58 @@ package biz
 import (
 	us "carthage/protos/user_service"
 	"carthage/services/user_service/biz/interfaces"
+	"carthage/services/user_service/constants"
 	"carthage/services/user_service/types"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
+
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
-type UserOpsHandler struct{}
+type UserOpsHandler struct {
+	logger *slog.Logger
+	tracer trace.Tracer
+}
 
 func NewUserOpsHandler() interfaces.UserOpsInterface {
-	return &UserOpsHandler{}
+	return &UserOpsHandler{
+		logger: otelslog.NewLogger(constants.ServiceName),
+		tracer: otel.Tracer(constants.ServiceName),
+	}
 }
 
 func (h *UserOpsHandler) GetUsers(ctx context.Context, tenantID string) ([]*us.UserInfo, error) {
-	// ctx, span := tracer.Start(ctx, "GetUsers")
-	// defer span.End()
+	ctx, span := h.tracer.Start(ctx, "biz.GetUsers")
+	defer span.End()
 
 	httpRes, httpErr := http.Get("https://jsonplaceholder.typicode.com/users")
 
 	if httpErr != nil {
-		log.Fatalf("Cannot make http request %v", httpErr)
+		errMsg := fmt.Errorf("cannot make http request %v", httpErr)
+		h.logger.ErrorContext(ctx, errMsg.Error())
+		return nil, errMsg
 	}
 
 	resBody, resErr := io.ReadAll(httpRes.Body)
 	if resErr != nil {
-		log.Fatal("Cannot read response body")
+		errMsg := fmt.Errorf("cannot read response body %v", resErr)
+		h.logger.ErrorContext(ctx, errMsg.Error())
+		return nil, errMsg
 	}
 
 	var userInfos []*types.UserInfo
 	marErr := json.Unmarshal(resBody, &userInfos)
 
 	if marErr != nil {
-		log.Fatalf("Failed to unmarshal json response %v", marErr)
+		errMsg := fmt.Errorf("failed to unmarshal json response %v", marErr)
+		h.logger.ErrorContext(ctx, errMsg.Error())
+		return nil, errMsg
 	}
 
 	var response []*us.UserInfo
@@ -53,25 +71,31 @@ func (h *UserOpsHandler) GetUsers(ctx context.Context, tenantID string) ([]*us.U
 }
 
 func (h *UserOpsHandler) GetUserByID(ctx context.Context, tenantID, userIDs string) (*us.UserInfo, error) {
-	// ctx, span := tracer.Start(ctx, "GetUserByID")
-	// defer span.End()
+	ctx, span := h.tracer.Start(ctx, "biz.GetUserByID")
+	defer span.End()
 
 	httpRes, httpErr := http.Get("https://jsonplaceholder.typicode.com/users/" + userIDs)
 
 	if httpErr != nil {
-		log.Fatalf("Cannot make http request %v", httpErr)
+		errMsg := fmt.Errorf("cannot make http request %v", httpErr)
+		h.logger.ErrorContext(ctx, errMsg.Error())
+		return nil, errMsg
 	}
 
 	resBody, resErr := io.ReadAll(httpRes.Body)
 	if resErr != nil {
-		log.Fatal("Cannot read response body")
+		errMsg := fmt.Errorf("cannot read response body %v", resErr)
+		h.logger.ErrorContext(ctx, errMsg.Error())
+		return nil, errMsg
 	}
 
 	var user *types.UserInfo
 	marErr := json.Unmarshal(resBody, &user)
 
 	if marErr != nil {
-		log.Fatalf("Failed to unmarshal json response %v", marErr)
+		errMsg := fmt.Errorf("failed to unmarshal json response %v", marErr)
+		h.logger.ErrorContext(ctx, errMsg.Error())
+		return nil, errMsg
 	}
 
 	response := &us.UserInfo{

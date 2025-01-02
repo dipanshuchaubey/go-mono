@@ -3,9 +3,9 @@ package main
 import (
 	common "carthage/common/config"
 	ot "carthage/common/otel"
-	bs "carthage/protos/bootcamp_service"
 	service "carthage/services/bootcamp_service"
 	"carthage/services/bootcamp_service/config"
+	"carthage/services/bootcamp_service/constants"
 	"context"
 	"errors"
 	"fmt"
@@ -17,14 +17,22 @@ import (
 	"syscall"
 	"time"
 
+	bs "github.com/dipanshuchaubey/protos-package/bootcamp_service"
+
+	"go.opentelemetry.io/otel"
+
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
+var Tracer = otel.Tracer(constants.ServiceName)
+var logger = otelslog.NewLogger(constants.ServiceName)
+
 func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*4)
 	defer cancel()
 
 	// Create a channel to catch the result or a panic recovery
@@ -32,21 +40,10 @@ func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 	var resp interface{}
 	var err error
 
-	// Set up OpenTelemetry.
-	otelShutdown, otelErr := ot.SetupOTelSDK(ctx)
-	if otelErr != nil {
-		return nil, otelErr
-	}
-
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
-
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Printf("Recovered from panic in %s: %v", info.FullMethod, r)
+				logger.InfoContext(ctx, fmt.Sprintf("Recovered from panic in %s: %v", info.FullMethod, r))
 				err = status.Error(codes.Internal, "internal server error")
 			}
 			close(done)
@@ -66,11 +63,20 @@ func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 	}
 }
 
-const (
-	ServiceName = "bootcamp_service"
-)
-
 func main() {
+	otelShutdown, err := ot.SetupOTelSDK()
+	if err != nil {
+		return
+	}
+
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err := errors.Join(err, otelShutdown(context.Background()))
+		if err != nil {
+			logger.Error(fmt.Sprintf("Error shutting down OTEL: %v", err))
+		}
+	}()
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -80,19 +86,19 @@ func main() {
 
 	// Load config
 	var config config.Config
-	common.LoadConfig(ServiceName, &config)
+	common.LoadConfig(constants.ServicePathName, &config)
 
 	go func() {
 		defer wg.Done()
 		defer func() {
 			if err := recover(); err != nil {
-				fmt.Println("recovered from panic:", err)
+				logger.Warn(fmt.Sprintf("recovered from panic: %v", err))
 			}
 		}()
 
 		lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Service.Port))
 		if err != nil {
-			log.Fatalf("failed to listen on port %s: %v", config.Service.Port, err)
+			logger.Error(fmt.Sprintf("failed to listen on port %s: %v", config.Service.Port, err))
 		}
 
 		options := []grpc.ServerOption{
@@ -107,14 +113,14 @@ func main() {
 		reflection.Register(s)
 
 		go func() {
-			log.Printf("gRPC server listening at %v", lis.Addr())
+			logger.Info(fmt.Sprintf("gRPC server listening at %v", lis.Addr()))
 			if err := s.Serve(lis); err != nil {
-				log.Fatalf("failed to serve: %v", err)
+				logger.Error(fmt.Sprintf("failed to serve: %v", err))
 			}
 		}()
 
 		<-stop // Wait for stop signal
-		log.Println("Shutting down gRPC server...")
+		logger.Info("Shutting down gRPC server...")
 		s.GracefulStop()
 	}()
 

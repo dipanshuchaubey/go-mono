@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/casbin/casbin/v2"
+	casbin "github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	xormadapter "github.com/casbin/xorm-adapter/v2"
 	_ "github.com/go-sql-driver/mysql"

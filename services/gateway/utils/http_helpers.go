@@ -16,7 +16,7 @@ type HttpResponseStruct struct {
 	Error   string `json:"error,omitempty"`
 }
 
-func PopulateErrorRespose(err error) []byte {
+func PopulateErrorResponse(err error) []byte {
 	var httpRes HttpResponseStruct
 
 	httpRes.Error = err.Error()
@@ -31,7 +31,7 @@ func PopulateErrorRespose(err error) []byte {
 	return jsonData
 }
 
-func PopulateSuccessRespose(data interface{}) []byte {
+func PopulateSuccessResponse(data interface{}) []byte {
 	httpRes := HttpResponseStruct{
 		Data:    data,
 		Success: true,
@@ -53,7 +53,7 @@ func SetParamsInContext(ctx context.Context, cnf types.Route, r *http.Request) c
 		rawParam := paramArr[len(paramArr)-1]
 		param := strings.Trim(rawParam, "{}")
 
-		ctx = context.WithValue(ctx, param, r.PathValue(param))
+		ctx = context.WithValue(ctx, types.ContextKey(param), r.PathValue(param))
 	}
 
 	return ctx
@@ -64,7 +64,10 @@ func Middleware(req http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Application-Type", "application/json")
-				w.Write(PopulateErrorRespose(fmt.Errorf("%v", err)))
+
+				if _, err := w.Write(PopulateErrorResponse(fmt.Errorf("%v", err))); err != nil {
+					fmt.Println("Error writing response: ", err)
+				}
 			}
 		}()
 

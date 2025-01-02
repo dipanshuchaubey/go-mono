@@ -6,6 +6,7 @@ metadata:
     service: bootcamp-service
 spec:
   replicas: 2
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       service: bootcamp-service
@@ -22,9 +23,19 @@ spec:
           env:
             - name: ENV
               value: "dev"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=bootcamp-service,service.version=1.4"
           ports:
             - containerPort: 50051
               name: bootcamp-svc
+          volumeMounts:
+            - name: bootcamp-service-secret
+              mountPath: /app/secrets
+              subPath: bootcamp_api.json
+      volumes:
+        - name: bootcamp-service-secret
+          secret:
+            secretName: bootcamp-service-secret
 ---
 kind: Service
 apiVersion: v1

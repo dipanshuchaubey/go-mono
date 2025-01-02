@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-collector
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: otel-collector
+  template:
+    metadata:
+      labels:
+        name: otel-collector
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+
+      containers:
+        - name: datadog-otel-collector
+          image: otel/opentelemetry-collector-contrib
+          ports:
+            - containerPort: 4317
+              name: otel-col-grpc
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/otelcol-contrib/config.yaml # Path where the config will be mounted
+              subPath: config.yaml # Name of the file in ConfigMap (ensure this matches your ConfigMap)
+          env:
+            - name: DD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: datadog-apikey # Ensure this matches your Secret name
+                  key: DD_API_KEY # Key in the Secret
+
+      volumes:
+        - name: config-volume
+          configMap:
+            name: otel-collector-config # Name of the ConfigMap (ensure this matches your ConfigMap)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: kube-system
+spec:
+  ports:
+    - port: 4317
+      targetPort: 4317
+      name: otel-col-grpc
+  selector:
+    name: otel-collector
+  type: ClusterIP
