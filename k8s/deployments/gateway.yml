@@ -6,6 +6,7 @@ metadata:
     service: gateway-service
 spec:
   replicas: 2
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       service: gateway-service

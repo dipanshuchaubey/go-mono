@@ -32,7 +32,7 @@ var Tracer = otel.Tracer(constants.ServiceName)
 var logger = otelslog.NewLogger(constants.ServiceName)
 
 func timeoutInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*4)
 	defer cancel()
 
 	// Create a channel to catch the result or a panic recovery

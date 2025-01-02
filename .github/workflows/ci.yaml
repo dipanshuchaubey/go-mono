@@ -1,0 +1,38 @@
+name: Go mono CI
+on: [push]
+jobs:
+  ci-lint-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup go 1.23
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.23
+
+      - name: Cache modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Tidy & Install ci-lint
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: |
+          go mod tidy
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+
+      - name: Lint
+        run: golangci-lint run
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build
+        run: make build

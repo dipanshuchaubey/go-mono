@@ -6,6 +6,7 @@ metadata:
     service: user-service
 spec:
   replicas: 2
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       service: user-service

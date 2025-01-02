@@ -4,10 +4,15 @@ import (
 	v1 "carthage/protos/bootcamp_service"
 	pbrq "carthage/protos/bootcamp_service/request"
 	pbrs "carthage/protos/bootcamp_service/response"
+	"carthage/services/gateway/constants"
 	"carthage/services/gateway/types"
 	"context"
 	"fmt"
+	"log/slog"
 
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -18,7 +23,9 @@ type BootcampServiceInterface interface {
 }
 
 type BootcampServiceClient struct {
-	bs v1.BootcampServiceClient
+	bs     v1.BootcampServiceClient
+	logger *slog.Logger
+	tracer trace.Tracer
 }
 
 func BootcampService(config *types.Config) BootcampServiceInterface {
@@ -29,16 +36,20 @@ func BootcampService(config *types.Config) BootcampServiceInterface {
 
 	c := v1.NewBootcampServiceClient(conn)
 
-	return &BootcampServiceClient{c}
+	return &BootcampServiceClient{
+		bs:     c,
+		logger: otelslog.NewLogger(constants.ServiceName),
+		tracer: otel.Tracer(constants.ServiceName),
+	}
 }
 
 func (b *BootcampServiceClient) GetBootcampsDetails(ctx context.Context, req *pbrq.GetBootcampsDetailsRequest) (*pbrs.GetBootcampsDetailsResponse, error) {
-	fmt.Println("Calling User Service GetBootcampsDetails: ", req)
+	b.logger.InfoContext(ctx, fmt.Sprintf("Calling User Service GetBootcampsDetails: %v", req))
 
 	res, err := b.bs.GetBootcampsDetails(ctx, req)
 	if err != nil {
 		errMsg := fmt.Errorf("error calling GetBootcampDetails for BootcampIDs %s: %v", req.GetBootcampIds(), err)
-		fmt.Println(errMsg)
+		b.logger.ErrorContext(ctx, errMsg.Error())
 		return nil, errMsg
 	}
 
@@ -46,12 +57,12 @@ func (b *BootcampServiceClient) GetBootcampsDetails(ctx context.Context, req *pb
 }
 
 func (b *BootcampServiceClient) CreateBootcamp(ctx context.Context, req *pbrq.CreateBootcampRequest) (*pbrs.CreateBootcampResponse, error) {
-	fmt.Println("Calling User Service CreateBootcamp: ", req)
+	b.logger.InfoContext(ctx, fmt.Sprintf("Calling User Service CreateBootcamp: %v", req))
 
 	res, err := b.bs.CreateBootcamp(ctx, req)
 	if err != nil {
 		errMsg := fmt.Errorf("error calling CreateBootcamp: %v", err)
-		fmt.Println(errMsg)
+		b.logger.ErrorContext(ctx, errMsg.Error())
 		return nil, errMsg
 	}
 
