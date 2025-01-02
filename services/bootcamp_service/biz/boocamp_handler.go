@@ -279,7 +279,9 @@ func (s *BootcampHandler) refreshToken(ctx context.Context) {
 		return
 	}
 
-	s.postRequest(ctx, s.cnf.EndPoints.PostLogin, creds, &response, false)
+	if err := s.postRequest(ctx, s.cnf.EndPoints.PostLogin, creds, &response, false); err != nil {
+		return
+	}
 
 	if response.Success && response.Token != constants.EmptyString {
 		s.AuthToken = response.Token
