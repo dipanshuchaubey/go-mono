@@ -1,0 +1,12 @@
+Service:
+  name: user_service
+  port: 8002
+  timeout: 3000
+Database:
+  driver: postgres
+  master:
+    uri: postgres://%s:%s@%s:5432/user_service
+    credentials_path: /run/secrets/user_service_db
+  read_replica:
+    uri: postgres://%s:%s@%s:5432/user_service
+    credentials_path: /run/secrets/user_service_db

@@ -1,5 +1,6 @@
 package constants
 
 const (
-	ServiceName = "user-service"
+	ServiceName     = "user-service"
+	ServicePathName = "user_service"
 )
