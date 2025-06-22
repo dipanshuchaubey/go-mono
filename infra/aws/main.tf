@@ -35,7 +35,7 @@ variable "fifo_sns_topic_name" {
   type        = string
 }
 
-resource "aws_s3_bucket" "carhage-private-assets" {
+resource "aws_s3_bucket" "carthage-private-assets" {
   bucket        = var.s3_bucket_name
   force_destroy = true
 }

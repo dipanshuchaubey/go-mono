@@ -9,7 +9,7 @@ type (
 
 	DB struct {
 		URI         string `yaml:"uri"`
-		Credentails string `yaml:"credentials_path"`
+		Credentials string `yaml:"credentials_path"`
 	}
 
 	Database struct {
