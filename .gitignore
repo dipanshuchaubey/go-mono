@@ -3,3 +3,11 @@ bin
 *.pem
 *.key
 todo.md
+# Local .terraform directories
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*_override.tf
+*_override.tf.json

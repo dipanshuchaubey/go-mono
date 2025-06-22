@@ -28,6 +28,13 @@ spec:
           ports:
             - containerPort: 5000
               name: gateway-svc
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "200Mi"
+              cpu: "250m"
 ---
 kind: Service
 apiVersion: v1
