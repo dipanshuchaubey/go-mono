@@ -17,8 +17,8 @@ import (
 	"sync"
 	"time"
 
-	pbrs "github.com/dipanshuchaubey/protos-package/bootcamp_service/response"
-	pbty "github.com/dipanshuchaubey/protos-package/bootcamp_service/types"
+	pbrs "go.dipanshu.work/protos/bootcamp_service/response"
+	pbty "go.dipanshu.work/protos/bootcamp_service/types"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"

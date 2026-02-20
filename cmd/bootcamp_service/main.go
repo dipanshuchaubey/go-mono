@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	bs "github.com/dipanshuchaubey/protos-package/bootcamp_service"
+	bs "go.dipanshu.work/protos/bootcamp_service"
 
 	"go.opentelemetry.io/otel"
 

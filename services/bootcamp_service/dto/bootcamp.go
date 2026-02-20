@@ -1,7 +1,7 @@
 package dto
 
 import (
-	pbrq "github.com/dipanshuchaubey/protos-package/bootcamp_service/request"
+	pbrq "go.dipanshu.work/protos/bootcamp_service/request"
 )
 
 type CreateBootcampBody struct {
