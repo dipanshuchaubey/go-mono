@@ -4,8 +4,8 @@ go 1.23.4
 
 require (
 	github.com/casbin/casbin/v2 v2.100.0
-	github.com/dipanshuchaubey/protos-package v0.0.1
 	github.com/go-sql-driver/mysql v1.8.1
+	go.dipanshu.work/protos v0.0.2
 	go.opentelemetry.io/contrib/bridges/otelslog v0.8.0
 	go.opentelemetry.io/otel v1.33.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.9.0

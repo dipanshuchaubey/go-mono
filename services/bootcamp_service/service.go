@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	pbrq "github.com/dipanshuchaubey/protos-package/bootcamp_service/request"
-	pbrs "github.com/dipanshuchaubey/protos-package/bootcamp_service/response"
+	pbrq "go.dipanshu.work/protos/bootcamp_service/request"
+	pbrs "go.dipanshu.work/protos/bootcamp_service/response"
 
-	v1 "github.com/dipanshuchaubey/protos-package/bootcamp_service"
+	v1 "go.dipanshu.work/protos/bootcamp_service"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"

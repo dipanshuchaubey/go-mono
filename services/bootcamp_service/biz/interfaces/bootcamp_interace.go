@@ -4,8 +4,8 @@ import (
 	"carthage/services/bootcamp_service/dto"
 	"context"
 
-	pbrs "github.com/dipanshuchaubey/protos-package/bootcamp_service/response"
-	pbty "github.com/dipanshuchaubey/protos-package/bootcamp_service/types"
+	pbrs "go.dipanshu.work/protos/bootcamp_service/response"
+	pbty "go.dipanshu.work/protos/bootcamp_service/types"
 )
 
 type BootcampInterface interface {

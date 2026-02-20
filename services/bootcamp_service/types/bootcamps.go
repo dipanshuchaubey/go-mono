@@ -1,7 +1,7 @@
 package types
 
 import (
-	pbty "github.com/dipanshuchaubey/protos-package/bootcamp_service/types"
+	pbty "go.dipanshu.work/protos/bootcamp_service/types"
 )
 
 type BootcampInfo struct {
