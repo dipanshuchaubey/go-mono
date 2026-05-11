@@ -1,0 +1,43 @@
+name: PR Size Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-lines:
+    name: Check PR Size (Lines Changed)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Check PR Size
+        run: |
+          # Use the base and head SHAs from the pull request event metadata
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          
+          echo "Comparing $BASE_SHA to $HEAD_SHA"
+          
+          # Calculate total lines added (insertions only) using git numstat
+          LINES_ADDED=$(git diff --numstat $BASE_SHA...$HEAD_SHA | awk '$1 ~ /^[0-9]+$/ { additions += $1 } END { print additions+0 }')
+          
+          echo "Total lines added: $LINES_ADDED"
+          
+          if [ "$LINES_ADDED" -gt 1000 ]; then
+            # The ::error:: syntax highlights the error directly in the GitHub PR UI
+            echo "::error::PR size exceeds the maximum allowed limit of 1000 lines (Total added: $LINES_ADDED)."
+            exit 1
+          else
+            echo "PR size is within the allowed 1000 lines limit."
+          fi
